@@ -101,15 +101,25 @@ impl GeyserPlugin for Geyser {
             }
             ReplicaAccountInfoVersions::V0_0_3(info) => info,
         };
-        let success = self
-            .grpc_channel
-            .clone()
-            .unwrap()
-            .send(Message::Account(MessageAccount::from_geyser(account, slot, is_startup)))
-            .is_ok();
-        if !success {
-            println!("update_account send fail")
-        };
+        let start = SystemTime::now();
+        let since_epoch = start.duration_since(UNIX_EPOCH)
+            .expect("Time went backwards");
+        let millis = since_epoch.as_micros();
+        println!("Current timestamp in milliseconds: {}", millis);
+        println!("solt: {}", slot);
+        if let Some(tx) = account.txn {
+            println!("txn_signature: {}", bs58::encode(tx.signature()).into_string());
+        }
+        println!("Account: {}", bs58::encode(account.pubkey).into_string());
+        // let success = self
+        //     .grpc_channel
+        //     .clone()
+        //     .unwrap()
+        //     .send(Message::Account(MessageAccount::from_geyser(account, slot, is_startup)))
+        //     .is_ok();
+        // if !success {
+        //     println!("update_account send fail")
+        // };
         Ok(())
     }
     fn notify_transaction(
