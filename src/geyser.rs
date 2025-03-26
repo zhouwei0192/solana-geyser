@@ -101,6 +101,10 @@ impl GeyserPlugin for Geyser {
             }
             ReplicaAccountInfoVersions::V0_0_3(info) => info,
         };
+        let k =  bs58::encode(account.pubkey).into_string();
+        if k == "SysvarRecentB1ockHashes11111111111111111111" {
+            return Ok(());
+        };
         let start = SystemTime::now();
         let since_epoch = start.duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
@@ -108,7 +112,7 @@ impl GeyserPlugin for Geyser {
         println!("Current timestamp in micros seconds: {}", millis);
         println!("is_startup: {}", is_startup);
         println!("solt: {}", slot);
-        println!("Account: {}", bs58::encode(account.pubkey).into_string());
+        println!("Account: {}", k);
         if let Some(tx) = account.txn {
             println!("txn_signature: {}", bs58::encode(tx.signature()).into_string());
         }
