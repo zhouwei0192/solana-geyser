@@ -105,12 +105,13 @@ impl GeyserPlugin for Geyser {
         let since_epoch = start.duration_since(UNIX_EPOCH)
             .expect("Time went backwards");
         let millis = since_epoch.as_micros();
-        println!("Current timestamp in milliseconds: {}", millis);
+        println!("Current timestamp in micros seconds: {}", millis);
+        println!("is_startup: {}", is_startup);
         println!("solt: {}", slot);
+        println!("Account: {}", bs58::encode(account.pubkey).into_string());
         if let Some(tx) = account.txn {
             println!("txn_signature: {}", bs58::encode(tx.signature()).into_string());
         }
-        println!("Account: {}", bs58::encode(account.pubkey).into_string());
         // let success = self
         //     .grpc_channel
         //     .clone()
