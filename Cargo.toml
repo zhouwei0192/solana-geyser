@@ -3,6 +3,9 @@ name = "solana-geyser"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 solana-sdk = "1.16.25"
 tokio = {version = "1.44.1", features = ["full", "rt-multi-thread"]}
