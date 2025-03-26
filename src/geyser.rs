@@ -61,7 +61,7 @@ impl GeyserPlugin for Geyser {
                             let start = SystemTime::now();
                             let since_epoch = start.duration_since(UNIX_EPOCH)
                                 .expect("Time went backwards");
-                            let millis = since_epoch.as_millis();
+                            let millis = since_epoch.as_micros();
                             println!("Current timestamp in milliseconds: {}", millis);
                             match message {
                                 Message::Account(account) => {
