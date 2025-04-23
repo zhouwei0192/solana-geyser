@@ -44,7 +44,7 @@ fn geyser() {
     let pubkey = Pubkey::default();
     let owner = Pubkey::default();
     // let mut data = Vec::with_capacity(1024*1024);
-    let mut data = Vec::with_capacity(1024*10);
+    let mut data = Vec::with_capacity(1024*5);
     for i in 0..data.capacity() {
         data.push((i % 255) as u8);
     }
