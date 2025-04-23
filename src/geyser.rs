@@ -132,7 +132,7 @@ impl GeyserPlugin for Geyser {
         is_startup: bool,
     ) -> Result<()> {
 
-        let start = std::time::Instant::now();
+        // let start = std::time::Instant::now();
 
         let account = match account {
             ReplicaAccountInfoVersions::V0_0_1(_info) => {
@@ -143,17 +143,20 @@ impl GeyserPlugin for Geyser {
             }
             ReplicaAccountInfoVersions::V0_0_3(info) => info,
         };
-        
-        let success = self
+        if account.data.len() <= 10240 {
+            let success = self
             .grpc_channel
             .clone()
             .unwrap()
             .send(Message::Account(MessageAccount::from_geyser(account, slot, is_startup)))
             .is_ok();
-        if !success {
-            println!("update_account send fail")
-        };
-        let end = start.elapsed();
+            if !success {
+                println!("update_account send fail")
+            };
+        }
+        
+
+        // let end = start.elapsed();
         // println!("{:?}", end);
         
         Ok(())
