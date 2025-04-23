@@ -428,7 +428,15 @@ pub trait GeyserPlugin: Any + Send + Sync + std::fmt::Debug {
     ) -> Result<()> {
         Ok(())
     }
-
+    #[allow(unused_variables)]
+    fn batch_update_account(
+        &self,
+        account: Vec<ReplicaAccountInfoVersions>,
+        slot: Slot,
+        is_startup: bool,
+    ) -> Result<()> {
+        Ok(())
+    }
     /// Called when all accounts are notified of during startup.
     fn notify_end_of_startup(&self) -> Result<()> {
         Ok(())
@@ -494,5 +502,8 @@ pub trait GeyserPlugin: Any + Send + Sync + std::fmt::Debug {
     /// entry data, return true.
     fn entry_notifications_enabled(&self) -> bool {
         false
+    }
+    fn get_test(&self) -> String {
+        "".to_owned()
     }
 }

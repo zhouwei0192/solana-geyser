@@ -16,6 +16,7 @@ use crate::{geyser_plugin_interface::{GeyserPlugin, ReplicaAccountInfoVersions, 
 pub enum Message {
     // Slot(MessageSlot),
     Account(MessageAccount),
+    Accounts(Vec<MessageAccount>),
     Transaction(MessageTransactionInfo),
     // Entry(Arc<MessageEntry>),
     // BlockMeta(Arc<MessageBlockMeta>),
@@ -65,12 +66,16 @@ impl GeyserPlugin for Geyser {
                             println!("Current timestamp in milliseconds: {}", millis);
                             match message {
                                 Message::Account(account) => {
-                                    println!("txn_signature: {}", account.txn_signature.unwrap());
-                                    println!("Account: {}", bs58::encode(account.pubkey.to_bytes()).into_string());
+                                    // println!("Account" );
+                                    // println!("txn_signature: {}", account.txn_signature.unwrap());
+                                    // println!("Account: {}", bs58::encode(account.pubkey.to_bytes()).into_string());
                                 }
                                 Message::Transaction(transaction) => {
-                                    println!("Transaction: {:?}", transaction.signature);
-                                }                 
+                                    // println!("Transaction");
+                                }
+                                Message::Accounts(accounts) => {
+                                    // println!("accounts: {:?}", accounts.len());
+                                }
                             }
                         });
                     }
@@ -82,6 +87,43 @@ impl GeyserPlugin for Geyser {
     fn on_unload(&mut self) {
         drop(self.grpc_channel.clone());
     }
+    fn batch_update_account(
+        &self,
+        accounts: Vec<ReplicaAccountInfoVersions>,
+        slot: Slot,
+        is_startup: bool,
+    ) -> Result<()> {
+        // let start = SystemTime::now();
+        // let since_epoch = start.duration_since(UNIX_EPOCH)
+        //     .expect("Time went backwards");
+        // let millis = since_epoch.as_micros();
+        // println!("Current timestamp in micros seconds: {}", millis);
+        let mut send_accounts = Vec::with_capacity(accounts.len());
+        for account in accounts {
+            let account = match account {
+                ReplicaAccountInfoVersions::V0_0_1(_info) => {
+                    unreachable!("ReplicaAccountInfoVersions::V0_0_1 is not supported")
+                }
+                ReplicaAccountInfoVersions::V0_0_2(_info) => {
+                    unreachable!("ReplicaAccountInfoVersions::V0_0_2 is not supported")
+                }
+                ReplicaAccountInfoVersions::V0_0_3(info) => info,
+            };
+            send_accounts.push(MessageAccount::from_geyser(account, slot, is_startup));
+        }
+        let success = self
+            .grpc_channel
+            .clone()
+            .unwrap()
+            .send(Message::Accounts(send_accounts))
+            .is_ok();
+        if !success {
+            println!("update_account send fail")
+        };
+
+        // println!("len: {}", accounts.len());
+        Ok(())
+    }
 
     fn update_account(
         &self,
@@ -89,9 +131,9 @@ impl GeyserPlugin for Geyser {
         slot: Slot,
         is_startup: bool,
     ) -> Result<()> {
-        // if is_startup {
-        //     return Ok(()) ;
-        // }
+
+        let start = std::time::Instant::now();
+
         let account = match account {
             ReplicaAccountInfoVersions::V0_0_1(_info) => {
                 unreachable!("ReplicaAccountInfoVersions::V0_0_1 is not supported")
@@ -101,30 +143,19 @@ impl GeyserPlugin for Geyser {
             }
             ReplicaAccountInfoVersions::V0_0_3(info) => info,
         };
-        let k =  bs58::encode(account.pubkey).into_string();
-        if k == "SysvarRecentB1ockHashes11111111111111111111" {
-            return Ok(());
+        
+        let success = self
+            .grpc_channel
+            .clone()
+            .unwrap()
+            .send(Message::Account(MessageAccount::from_geyser(account, slot, is_startup)))
+            .is_ok();
+        if !success {
+            println!("update_account send fail")
         };
-        let start = SystemTime::now();
-        let since_epoch = start.duration_since(UNIX_EPOCH)
-            .expect("Time went backwards");
-        let millis = since_epoch.as_micros();
-        println!("Current timestamp in micros seconds: {}", millis);
-        println!("is_startup: {}", is_startup);
-        println!("solt: {}", slot);
-        println!("Account: {}", k);
-        if let Some(tx) = account.txn {
-            println!("txn_signature: {}", bs58::encode(tx.signature()).into_string());
-        }
-        // let success = self
-        //     .grpc_channel
-        //     .clone()
-        //     .unwrap()
-        //     .send(Message::Account(MessageAccount::from_geyser(account, slot, is_startup)))
-        //     .is_ok();
-        // if !success {
-        //     println!("update_account send fail")
-        // };
+        let end = start.elapsed();
+        // println!("{:?}", end);
+        
         Ok(())
     }
     fn notify_transaction(
@@ -148,6 +179,10 @@ impl GeyserPlugin for Geyser {
         //     println!("notify_transaction send fail")
         // };
         Ok(())
+    }
+
+    fn get_test(&self) -> String {
+        "123".to_owned()
     }
 
 }

@@ -49,6 +49,11 @@ pub struct MessageAccount {
 
 impl MessageAccount {
     pub fn from_geyser(info: &ReplicaAccountInfoV3<'_>, slot: Slot, is_startup: bool) -> Self {
+        let tx = if let Some(txn) = info.txn {
+            Some(txn.clone())
+        } else {
+            None
+        };
         Self {
             account: Account { 
                 lamports: info.lamports, 
@@ -62,7 +67,7 @@ impl MessageAccount {
             txn_signature: info.txn.map(|txn| *txn.signature()),
             slot,
             is_startup,
-            tx: Some(info.txn.unwrap().clone())
+            tx
             // created_at: Timestamp::from(SystemTime::now()),
         }
     }
